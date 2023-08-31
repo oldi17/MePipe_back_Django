@@ -6,12 +6,11 @@ from rest_framework.decorators import (
     permission_classes,
     renderer_classes,
     )
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+
 
 from authC.tokens import create_jwt_pair_for_user
-
-
 from .renderers import UserJSONRenderer
 from .serializers import (
     RegistrationSerializer, UserSerializer, LoginSerializer
@@ -36,6 +35,16 @@ def loginUser(req):
     tokens = create_jwt_pair_for_user(serializer.validated_data)
     return Response(tokens, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logoutUser(req):
+    refresh_token = req.data.get('refresh')
+    try:
+      token = RefreshToken(token=refresh_token)
+      token.blacklist()
+    except TokenError as e:
+        return Response({"status": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"status": "OK, goodbye"}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
