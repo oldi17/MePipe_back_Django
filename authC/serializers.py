@@ -4,23 +4,6 @@ from django.contrib.auth import authenticate
 from .models import User
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    """ Сериализация регистрации пользователя и создания нового. """
-
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
-
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'password',]
-
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
-
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128)
@@ -53,9 +36,7 @@ class LoginSerializer(serializers.Serializer):
 
         return user
 
-class UserSerializer(serializers.ModelSerializer):
-    """ Ощуществляет сериализацию и десериализацию объектов User. """
-
+class UserModelSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128,
         min_length=8,
@@ -65,10 +46,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'password',)
+    
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
-        """ Выполняет обновление User. """
-
         password = validated_data.pop('password', None)
 
         for key, value in validated_data.items():

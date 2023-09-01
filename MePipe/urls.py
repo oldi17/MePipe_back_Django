@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('admin/', admin.site.urls),
     path('auth/', include('authC.urls', namespace='authC')),
+    path('api/', include('api.urls', namespace='api')),
 ]

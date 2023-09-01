@@ -3,15 +3,17 @@ import json
 from rest_framework.renderers import JSONRenderer
 
 
-class UserJSONRenderer(JSONRenderer):
+class CreatorJSONRenderer(JSONRenderer):
     charset = 'utf-8'
 
     def render(self, data, media_type=None, renderer_context=None):
         status_code = data.get('status_code', None)
 
         if not status_code:
+            data.pop('id', None)
+            data.pop('user_id', None)
             return json.dumps({
-                'user': data
+                'creator': data
             })
         
-        return super(UserJSONRenderer, self).render(data)
+        return super(CreatorJSONRenderer, self).render(data)
