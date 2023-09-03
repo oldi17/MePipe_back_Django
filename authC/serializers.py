@@ -45,13 +45,18 @@ class UserModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password',)
+        fields = ('email', 'username', 'password', 'logo',)
     
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+        logo = validated_data.pop('logo', None)
+        user = User.objects.create_user(**validated_data)
+        setattr(user, 'logo', logo)
+        user.save()
+        return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
+        validated_data.pop('logo', None)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)

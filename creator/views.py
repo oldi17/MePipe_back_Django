@@ -6,12 +6,12 @@ from rest_framework.decorators import (
     permission_classes,
     renderer_classes,
     )
-from api.models import Creator
+from creator.models import Creator
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import NotFound
 
-from api.renderers import CreatorJSONRenderer
-from api.serializers import CreatorModelSerializer
+from creator.renderers import CreatorJSONRenderer
+from creator.serializers import CreatorModelSerializer
 from authC.models import User
 
 
@@ -35,7 +35,6 @@ def getCreator(req, username):
       creator = Creator.objects.get(user_id = user_id)
     except ObjectDoesNotExist as err:
         raise NotFound('No such creator')
-        # return Response({'code': 'no such creator'}, status=status.HTTP_400_BAD_REQUEST)
     serializer = CreatorModelSerializer(creator)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

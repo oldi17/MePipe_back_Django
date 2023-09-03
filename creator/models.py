@@ -8,7 +8,6 @@ class Creator(models.Model):
     last_name = models.CharField("last name", max_length=255, blank=True, null=True)
     contacts = models.TextField("contacts", blank=True, null=True)
     description = models.TextField("description", blank=True, null=True)
-    logo = models.CharField("logo", max_length=255)
     channel_background = models.CharField("channel background", max_length=255, blank=True, null=True)
 
     def __str__(self):

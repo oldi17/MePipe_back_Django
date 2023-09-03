@@ -21,6 +21,7 @@ from .serializers import (
 @renderer_classes([UserJSONRenderer])
 def registerUser(req):
     user = req.data.get('user', {})
+    user['logo'] = '/static/PfPs/'+ user['username'] +'.png'
     serializer = UserModelSerializer(data=user)
     serializer.is_valid(raise_exception=True)
     serializer.save()
