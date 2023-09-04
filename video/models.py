@@ -9,12 +9,11 @@ class Video(models.Model):
     title = models.CharField("title", max_length=255)
     description = models.TextField("description", blank=True, null=True)
     url = models.CharField("url", max_length=255, unique=True)
-    length = models.IntegerField(default=0)
-    thumbnail = models.CharField("thumbnail", max_length=255)
+    duration = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
     createdAt = models.DateTimeField(auto_now_add=True)
-    likes = models.ManyToManyField(User, related_name='likes')
-    dislikes = models.ManyToManyField(User, related_name='dislikes')
+    likes = models.ManyToManyField(User, related_name='likes', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
 
     def __str__(self):
         return self.url

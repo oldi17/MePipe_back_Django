@@ -128,11 +128,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+Path(STATIC_ROOT).mkdir(parents=True, exist_ok=True)
 
-MEDIA_ROOT= os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT= os.path.join(BASE_DIR, 'media')
 MEDIA_URL= "/media/"
+Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
+
+MEDIA_ROOT_VIDEO= os.path.join(MEDIA_ROOT, 'video')
+MEDIA_ROOT_THUMB= os.path.join(MEDIA_ROOT, 'thumb')
+Path(MEDIA_ROOT_VIDEO).mkdir(parents=True, exist_ok=True)
+Path(MEDIA_ROOT_THUMB).mkdir(parents=True, exist_ok=True)
+
+BIN_ROOT= os.path.join(BASE_DIR, 'bin')
+FFPROBE_PATH = os.path.join(BIN_ROOT, 'ffprobe')
+FFMPEG_PATH = os.path.join(BIN_ROOT, 'ffmpeg')
+Path(BIN_ROOT).mkdir(parents=True, exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
