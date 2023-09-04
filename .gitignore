@@ -1,2 +1,5 @@
 .env
-media/*
+media/
+bin/
+__pycache__/
+migrations/
