@@ -1,5 +1,4 @@
 from django.db import models
-from functools import reduce
 
 from creator.models import Creator
 from authC.models import User

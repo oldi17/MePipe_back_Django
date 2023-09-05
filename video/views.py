@@ -37,11 +37,9 @@ def getVideo(req, url):
 def addVideo(req):
     try:
         creator = Creator.objects.get(user_id = req.user.id)
-    except creator.DoesNotExist:
-        creator = None
-    if not creator:
+    except:
         raise PermissionDenied('You are not a creator yet')
-    
+  
     video = req.data
     video['creator_id'] = creator.id
     video['url'] = generateURL()
