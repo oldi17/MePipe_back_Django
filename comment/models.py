@@ -9,8 +9,8 @@ class Comment(models.Model):
     content = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)
     modified = models.BooleanField(default=False)
-    likes = models.ManyToManyField(User, related_name='likes', blank=True)
-    dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
+    likes = models.ManyToManyField(User, related_name='clikes', blank=True)
+    dislikes = models.ManyToManyField(User, related_name='cdislikes', blank=True)
 
     def like(self, user:User):
         self.likes.add(user)

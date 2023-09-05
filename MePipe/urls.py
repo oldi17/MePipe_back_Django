@@ -14,6 +14,7 @@ urlpatterns = [
     path('auth/', include('authC.urls', namespace='authC')),
     path('api/creator/', include('creator.urls', namespace='creator')),
     path('api/v/', include('video.urls', namespace='video')),
+    path('api/c/', include('comment.urls', namespace='comment')),
 ]
 
 
