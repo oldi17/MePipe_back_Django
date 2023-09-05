@@ -97,7 +97,7 @@ def checkComment(req, id):
     try:
         comment = Comment.objects.get(id = id)
     except ObjectDoesNotExist as err:
-        raise NotFound('No such video')
+        raise NotFound('No such comment')
     
     if comment.user_id != req.id:
         raise PermissionDenied('It\'s not your comment')
