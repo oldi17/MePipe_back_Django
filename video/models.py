@@ -39,3 +39,10 @@ class Video(models.Model):
     def addView(self):
         self.views += 1
         self.save()
+    
+    def isLikedByUser(self, user:User):
+        if user in self.likes:
+            return 1
+        elif user in self.dislikes:
+            return -1
+        return 0

@@ -91,7 +91,41 @@ def addVideo(req):
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([VideoJSONRenderer])
+def likeVideo(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    video.like(req.user)
+    serializer = VideoModelSerializer(video)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([VideoJSONRenderer])
+def dislikeVideo(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    video.dislike(req.user)
+    serializer = VideoModelSerializer(video)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([VideoJSONRenderer])
+def unlikeVideo(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    video.unlike(req.user)
+    serializer = VideoModelSerializer(video)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 def probe_file(pipe):
     cmnd = [settings.FFPROBE_PATH, '-v', 'quiet', '-print_format', 'json', '-show_format', 'pipe:0']
