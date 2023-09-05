@@ -42,7 +42,10 @@ def getCreator(req, username):
 @permission_classes([IsAuthenticated])
 @renderer_classes([CreatorJSONRenderer])
 def modifyCreator(req):
-    creator = Creator.objects.get(user_id = req.user.id)
+    try:
+        creator = Creator.objects.get(user_id = req.user.id)
+    except:
+        raise NotFound('No such creator')
     serializer_data = req.data.get('creator', {})
     serializer = CreatorModelSerializer(
         creator, data=serializer_data, partial=True
