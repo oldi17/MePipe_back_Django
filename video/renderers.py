@@ -15,3 +15,16 @@ class VideoJSONRenderer(JSONRenderer):
             })
         
         return super(VideoJSONRenderer, self).render(data)
+
+class HistoryVideoJSONRenderer(JSONRenderer):
+    charset = 'utf-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        status_code = data.get('status_code', None)
+
+        if not status_code:
+            return json.dumps({
+                'historyVideo': data
+            })
+        
+        return super(HistoryVideoJSONRenderer, self).render(data)

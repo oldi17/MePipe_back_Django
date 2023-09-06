@@ -40,8 +40,14 @@ class Video(models.Model):
         self.save()
     
     def isLikedByUser(self, user:User):
-        if user in self.likes:
+        if  self.likes.contains(user):
             return 1
-        elif user in self.dislikes:
+        elif self.dislikes.contains(user):
             return -1
         return 0
+
+class HistoryVideo(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    video_url = models.ForeignKey(Video, on_delete=models.CASCADE, to_field='url')
+    watchedAt = models.DateTimeField(auto_now=True)
+    time = models.IntegerField(default=0)

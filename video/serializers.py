@@ -3,10 +3,11 @@ import os
 from rest_framework import serializers
 from rest_framework.exceptions import UnsupportedMediaType
 from django.core.exceptions import SuspiciousFileOperation
+from authC.models import User
 
 from video.utils import getMediaInfo, saveImage16x9, saveVideo16x9
 
-from .models import Video
+from .models import HistoryVideo, Video
 import MePipe.settings as settings
 
 class VideoModelSerializer(serializers.ModelSerializer):
@@ -72,6 +73,25 @@ class VideoModelSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['likes'] = instance.getLikesNumber()
         ret['dislikes'] = instance.getDislikesNumber()
+        req = self.context.get("req")
+        if req and isinstance(req.user, User):
+            user = req.user
+            ret['isliked'] = instance.isLikedByUser(user)
+        
         return ret
 
-
+class HistoryVideoModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HistoryVideo
+        exclude = ()
+    
+    def create(self, validated_data):
+        return HistoryVideo.objects.update_or_create(
+            user_id = validated_data['user_id'], 
+            video_url = validated_data['video_url'])[0]
+    
+    def update(self, instance, validated_data):
+        time = validated_data.pop('time', 0)
+        setattr(instance, 'time', time)
+        instance.save()
+        return instance

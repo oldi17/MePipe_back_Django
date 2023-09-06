@@ -13,10 +13,32 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 from creator.models import Creator
 from video.utils import generateURL
-from .models import Video
-from .renderers import VideoJSONRenderer
-from .serializers import VideoModelSerializer
+from .models import Video, HistoryVideo
+from .renderers import HistoryVideoJSONRenderer, VideoJSONRenderer
+from .serializers import VideoModelSerializer, HistoryVideoModelSerializer
+from MePipe.utils import paginate
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getAllHistoryVideo(req):
+    historyVideo = HistoryVideo.objects \
+        .filter(user_id = req.user.id) \
+        .order_by('-watchedAt')
+    return paginate(historyVideo, req, HistoryVideoModelSerializer, 'historyVideos')
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getCreatorVideo(req, id):
+    video = Video.objects \
+        .filter(creator_id = id) \
+        .order_by('-id')
+    return paginate(video, req, VideoModelSerializer, 'videos')
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getAllVideo(req):
+    video = Video.objects.all().order_by('-id')
+    return paginate(video, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -26,8 +48,49 @@ def getVideo(req, url):
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
-    serializer = VideoModelSerializer(video)
+    serializer = VideoModelSerializer(video, context={'req': req})
+
     video.addView()
+    
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([HistoryVideoJSONRenderer])
+def getHistoryVideo(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    historyVideo = {
+        'user_id': req.user.id, 
+        'video_url': video.url
+    }
+    serializer = HistoryVideoModelSerializer(data=historyVideo)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([HistoryVideoJSONRenderer])
+def setHistoryVideoTime(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    serializer_data = {
+        'user_id': req.user.id, 
+        'video_url': video.url,
+    }
+    try:
+        historyVideo = HistoryVideo.objects.get(**serializer_data)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video in history')
+    serializer_data['time'] = req.data.get('historyVideo', {}).get('time', 0)
+    serializer = HistoryVideoModelSerializer(historyVideo, data=serializer_data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -44,7 +107,7 @@ def addVideo(req):
     video['creator_id'] = creator.id
     video['url'] = generateURL()
     
-    serializer = VideoModelSerializer(data=video)
+    serializer = VideoModelSerializer(data=video, context={'req': req})
     serializer.is_valid(raise_exception=True)
     
     serializer.save()
@@ -73,7 +136,7 @@ def modifyVideo(req, url):
 
     serializer = VideoModelSerializer(
         video, data=serializer_data, partial=True
-    )
+        , context={'req': req})
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -88,7 +151,7 @@ def likeVideo(req, url):
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
     video.like(req.user)
-    serializer = VideoModelSerializer(video)
+    serializer = VideoModelSerializer(video, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -100,7 +163,7 @@ def dislikeVideo(req, url):
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
     video.dislike(req.user)
-    serializer = VideoModelSerializer(video)
+    serializer = VideoModelSerializer(video, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -112,5 +175,5 @@ def unlikeVideo(req, url):
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
     video.unlike(req.user)
-    serializer = VideoModelSerializer(video)
+    serializer = VideoModelSerializer(video, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,6 +1,7 @@
 from .models import Comment
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from authC.models import User
 
 class CommentModelSerializer(serializers.ModelSerializer):
 
@@ -24,3 +25,15 @@ class CommentModelSerializer(serializers.ModelSerializer):
 
         validated_data['modified'] = True
         return super().update(instance, validated_data)
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['likes'] = instance.getLikesNumber()
+        ret['dislikes'] = instance.getDislikesNumber()
+
+        req = self.context.get("req")
+        if req and isinstance(req.user, User):
+            user = req.user
+            ret['isliked'] = instance.isLikedByUser(user)
+        
+        return ret
