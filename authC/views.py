@@ -39,8 +39,12 @@ def loginUser(req):
     user = req.data.get('user', {})
     serializer = LoginSerializer(data=user)
     serializer.is_valid(raise_exception=True)
-    tokens = createJWTPairForUser(serializer.validated_data)
-    return Response(tokens, status=status.HTTP_200_OK)
+    tokens, user = serializer.validated_data
+    data = {
+        'user': UserModelSerializer(user).data,
+    }
+    data.update(tokens)
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

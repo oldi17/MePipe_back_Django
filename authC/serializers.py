@@ -6,6 +6,7 @@ from rest_framework.exceptions import UnsupportedMediaType
 from .models import User
 from .utils import saveImage1x1
 import MePipe.settings as settings
+from authC.tokens import createJWTPairForUser
 
 
 class LoginSerializer(serializers.Serializer):
@@ -37,8 +38,8 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'This user has been deactivated.'
             )
-
-        return user
+        tokens = createJWTPairForUser(user)
+        return (tokens, user)
 
 class UserModelSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
