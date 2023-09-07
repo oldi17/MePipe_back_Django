@@ -34,7 +34,8 @@ def saveImage16x9(file, path, fill_color=(0, 0, 0, 0)):
     size = int(max(x / 16, y / 9))
     new_im = Image.new('RGB', (size * 16, size * 9), fill_color)
     new_im.paste(im, (int((size * 16 - x) / 2), int((size * 9 - y) / 2)))
-    new_im.save(path)
+    new_im = new_im.resize((1280, 720))
+    new_im.save(path, quality=95)
     return new_im
 
 def saveVideo16x9(file, inFormat, path):

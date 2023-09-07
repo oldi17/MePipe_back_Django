@@ -21,6 +21,6 @@ urlpatterns = [
     
     
     path('history/all/', getAllHistoryVideo, name='get all history'),
-    path('history/t/<str:url>', setHistoryVideoTime, name='get all history'),
-    path('history/watch/<str:url>', getHistoryVideo, name='get all history'),
+    path('history/t/<str:url>', setHistoryVideoTime, name='set time of history video'),
+    path('history/watch/<str:url>', getHistoryVideo, name='get history video'),
 ]

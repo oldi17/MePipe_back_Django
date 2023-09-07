@@ -1,3 +1,4 @@
+import os
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -5,9 +6,10 @@ from rest_framework.decorators import (
     api_view, 
     permission_classes,
     renderer_classes,
+    parser_classes,
     )
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files import File
 
 
 from authC.tokens import createJWTPairForUser
@@ -15,13 +17,17 @@ from .renderers import UserJSONRenderer
 from .serializers import (
     UserModelSerializer, LoginSerializer
 )
+import MePipe.settings as settings
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @renderer_classes([UserJSONRenderer])
+@parser_classes([MultiPartParser, FormParser])
 def registerUser(req):
-    user = req.data.get('user', {})
-    user['logo'] = '/static/PfPs/'+ user['username'] +'.png'
+    user = req.data
+    if not user['logo']:
+        user = user.copy()
+        user['logo'] = File(open(os.path.join(settings.STATIC_ROOT, 'anon.png'), 'rb'))
     serializer = UserModelSerializer(data=user)
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -46,8 +52,9 @@ def getUser(req):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([UserJSONRenderer])
+@parser_classes([MultiPartParser, FormParser])
 def modifyUser(req):
-    serializer_data = req.data.get('user', {})
+    serializer_data = req.data
     serializer = UserModelSerializer(
         req.user, data=serializer_data, partial=True
     )
