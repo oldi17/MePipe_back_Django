@@ -21,11 +21,11 @@ class VideoModelSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         imgData = getMediaInfo(validated_data['thumbnail'].read())
         if not imgData.get('format_name', None) in ('png_pipe', 'jpeg_pipe', 'webp_pipe',):
-            raise UnsupportedMediaType('', detail='Loaded thumbnail is not of supported format(png, jpeg, webp)')
+            raise UnsupportedMediaType('', detail='Loaded thumbnail is not valid (supported formats: png, jpeg, webp)')
 
         videoData = getMediaInfo(validated_data['file'].read())
         if not videoData.get('duration', None):
-            raise UnsupportedMediaType('', detail='Loaded file is not a supported video')
+            raise UnsupportedMediaType('', detail='Loaded file is not valid video')
         
         duration = ceil(float(videoData.get('duration')))
         
@@ -48,7 +48,6 @@ class VideoModelSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         thumbnail = validated_data.pop('thumbnail', None)
-        print(instance)
         if thumbnail:
             imgData = getMediaInfo(thumbnail.read())
             if not imgData.get('format_name', None) in ('png_pipe', 'jpeg_pipe', 'webp_pipe',):

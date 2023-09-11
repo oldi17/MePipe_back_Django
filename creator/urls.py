@@ -7,5 +7,5 @@ app_name = 'creator'
 urlpatterns = [
     path('reg/', registerCreator, name='register'),
     path('modify/', modifyCreator, name='modify'),
-    path('get/<str:username>', getCreator, name='get'),
+    path('get/<str:name>', getCreator, name='get'),
 ]

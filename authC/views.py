@@ -25,7 +25,7 @@ import MePipe.settings as settings
 @parser_classes([MultiPartParser, FormParser])
 def registerUser(req):
     user = req.data
-    if not user['logo']:
+    if not user.get('logo', None):
         user = user.copy()
         user['logo'] = File(open(os.path.join(settings.STATIC_ROOT, 'anon.png'), 'rb'))
     serializer = UserModelSerializer(data=user)

@@ -146,34 +146,25 @@ def modifyVideo(req, url):
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def likeVideo(req, url):
-    try:
-        video = Video.objects.get(url = url)
-    except ObjectDoesNotExist as err:
-        raise NotFound('No such video')
-    video.like(req.user)
-    serializer = VideoModelSerializer(video, context={'req': req})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return checkVideo(req, url, 'like')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def dislikeVideo(req, url):
-    try:
-        video = Video.objects.get(url = url)
-    except ObjectDoesNotExist as err:
-        raise NotFound('No such video')
-    video.dislike(req.user)
-    serializer = VideoModelSerializer(video, context={'req': req})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return checkVideo(req, url, 'dislike')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def unlikeVideo(req, url):
+    return checkVideo(req, url, 'unlike')
+
+def checkVideo(req, url, method):
     try:
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
-    video.unlike(req.user)
+    getattr(video, method)(req.user)
     serializer = VideoModelSerializer(video, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)

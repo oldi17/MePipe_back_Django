@@ -59,7 +59,7 @@ class UserModelSerializer(serializers.ModelSerializer):
         try:
             saveImage1x1(file.file, os.path.join(settings.MEDIA_ROOT_PFP, validated_data['username'] + '.png'))
         except:
-            raise UnsupportedMediaType('', detail='Loaded profile picture is not of supported format(png, jpeg, webp)')
+            raise UnsupportedMediaType('', detail='Loaded profile picture is not valid (supported formats: png, jpeg, webp)')
         user = User.objects.create_user(**validated_data)
         user.save()
         return user

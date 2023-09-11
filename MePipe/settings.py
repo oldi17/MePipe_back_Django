@@ -14,6 +14,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from decouple import config
+from corsheaders.defaults import default_headers
 
 
 
@@ -66,6 +67,11 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
 ]
+
+CORS_ALLOW_HEADERS = (
+  *default_headers,
+  '_retry',
+  )
 
 ROOT_URLCONF = 'MePipe.urls'
 
@@ -145,9 +151,11 @@ Path(MEDIA_ROOT).mkdir(parents=True, exist_ok=True)
 MEDIA_ROOT_VIDEO= os.path.join(MEDIA_ROOT, 'video')
 MEDIA_ROOT_THUMB= os.path.join(MEDIA_ROOT, 'thumb')
 MEDIA_ROOT_PFP= os.path.join(MEDIA_ROOT, 'pfp')
+MEDIA_ROOT_CBG= os.path.join(MEDIA_ROOT, 'cbg')
 Path(MEDIA_ROOT_VIDEO).mkdir(parents=True, exist_ok=True)
 Path(MEDIA_ROOT_THUMB).mkdir(parents=True, exist_ok=True)
 Path(MEDIA_ROOT_PFP).mkdir(parents=True, exist_ok=True)
+Path(MEDIA_ROOT_CBG).mkdir(parents=True, exist_ok=True)
 
 BIN_ROOT= os.path.join(BASE_DIR, 'bin')
 FFPROBE_PATH = os.path.join(BIN_ROOT, 'ffprobe')
@@ -175,5 +183,3 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True
 }
-
-CORS_ORIGIN_ALLOW_ALL = config('CORS_ORIGIN_ALLOW_ALL', default=False, cast=bool)
