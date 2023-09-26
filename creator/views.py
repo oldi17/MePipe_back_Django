@@ -1,3 +1,4 @@
+import os
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -11,10 +12,13 @@ from creator.models import Creator
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files import File
+
 
 from creator.renderers import CreatorJSONRenderer
 from creator.serializers import CreatorModelSerializer
-from authC.models import User
+import MePipe.settings as settings
+from video.models import Video
 
 
 @api_view(['POST'])
@@ -22,7 +26,9 @@ from authC.models import User
 @renderer_classes([CreatorJSONRenderer])
 @parser_classes([MultiPartParser, FormParser])
 def registerCreator(req):
-    creator = req.data
+    creator = req.data.dict()
+    if not creator.get('channel_background', None):
+        creator['channel_background'] = File(open(os.path.join(settings.STATIC_ROOT, 'cbg.png'), 'rb'))
     creator['user_id'] = req.user.id
     serializer = CreatorModelSerializer(data=creator)
     serializer.is_valid(raise_exception=True)
@@ -37,8 +43,21 @@ def getCreator(req, name):
       creator = Creator.objects.get(name = name)
     except ObjectDoesNotExist as err:
         raise NotFound('No such creator')
-    serializer = CreatorModelSerializer(creator)
+    serializer = CreatorModelSerializer(creator, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([CreatorJSONRenderer])
+def getMe(req):
+    try:
+      creator = Creator.objects.get(user_id = req.user.id)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such creator')
+    serializer = CreatorModelSerializer(creator)
+    res = serializer.data
+    res['views'] = getViewsNumber(creator.id)
+    return Response(res, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -56,3 +75,30 @@ def modifyCreator(req):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([CreatorJSONRenderer])
+def subscribeToCreator(req, name):
+    return manageSubscription(req, name, 'subscribe')
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@renderer_classes([CreatorJSONRenderer])
+def unsubscribeToCreator(req, name):
+    return manageSubscription(req, name, 'unsubscribe')
+
+def manageSubscription(req, name, method):
+    try:
+      creator = Creator.objects.get(name = name)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such creator')
+    getattr(creator, method)(req.user)
+    serializer = CreatorModelSerializer(creator, context={'req': req})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+def getViewsNumber(creator_id):
+    views = 0
+    for v in Video.objects.filter(creator_id = creator_id):
+        views += v.views
+    return views

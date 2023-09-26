@@ -2,6 +2,8 @@ import os
 from rest_framework import serializers
 from rest_framework.exceptions import UnsupportedMediaType
 
+from authC.models import User
+
 from .models import Creator
 from .utils import cropAndSaveImage6x1
 import MePipe.settings as settings
@@ -36,3 +38,14 @@ class CreatorModelSerializer(serializers.ModelSerializer):
             setattr(instance, key, value)
         instance.save()
         return instance
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['subscribers'] = instance.getSubscribersNumber()
+        ret.pop('user_id')
+        req = self.context.get("req")
+        if req and isinstance(req.user, User):
+            user = req.user
+            ret['issubscribed'] = instance.isSubscribedByUser(user)
+        
+        return ret

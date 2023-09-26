@@ -146,21 +146,21 @@ def modifyVideo(req, url):
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def likeVideo(req, url):
-    return checkVideo(req, url, 'like')
+    return manageLikes(req, url, 'like')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def dislikeVideo(req, url):
-    return checkVideo(req, url, 'dislike')
+    return manageLikes(req, url, 'dislike')
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([VideoJSONRenderer])
 def unlikeVideo(req, url):
-    return checkVideo(req, url, 'unlike')
+    return manageLikes(req, url, 'unlike')
 
-def checkVideo(req, url, method):
+def manageLikes(req, url, method):
     try:
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
