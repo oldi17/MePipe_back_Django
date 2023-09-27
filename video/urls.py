@@ -16,7 +16,7 @@ urlpatterns = [
     path('dislike/<str:url>', dislikeVideo, name='dislike'),
     path('unlike/<str:url>', unlikeVideo, name='unlike'),
 
-    path('creator/<int:id>', getCreatorVideo, name='get creator'),
+    path('creator/<str:name>', getCreatorVideo, name='get creator'),
     path('all/', getAllVideo, name='get all'),
     
     

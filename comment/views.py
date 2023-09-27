@@ -21,12 +21,18 @@ from MePipe.utils import paginate
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def getComments(req, url):
-    print(req.path)
     comments = Comment.objects \
         .filter(video_url = url) \
         .annotate(likes_count = Count('likes')) \
         .order_by('-likes_count', '-id')
     return paginate(comments, req, CommentModelSerializer, 'comments')
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getCommentsCount(req, url):
+    comments = Comment.objects \
+        .filter(video_url = url)
+    return Response(comments.count(), status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -38,7 +44,7 @@ def addComment(req, url):
         raise NotFound('No such video')
     
     comment = req.data.get('comment', None)
-    comment['user_id'] = req.user.id
+    comment['user_username'] = req.user.username
     comment['video_url'] = video.url
     
     serializer = CommentModelSerializer(data=comment, context={'req': req})

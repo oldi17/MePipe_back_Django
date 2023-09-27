@@ -28,9 +28,9 @@ def getAllHistoryVideo(req):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def getCreatorVideo(req, id):
+def getCreatorVideo(req, name):
     video = Video.objects \
-        .filter(creator_id = id) \
+        .filter(creator_name = name) \
         .order_by('-id')
     return paginate(video, req, VideoModelSerializer, 'videos')
 
@@ -103,8 +103,8 @@ def addVideo(req):
     except:
         raise PermissionDenied('You are not a creator yet')
   
-    video = req.data
-    video['creator_id'] = creator.id
+    video = req.data.dict()
+    video['creator_name'] = creator.name
     video['url'] = generateURL()
     
     serializer = VideoModelSerializer(data=video, context={'req': req})

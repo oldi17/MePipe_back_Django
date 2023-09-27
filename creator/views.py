@@ -38,9 +38,20 @@ def registerCreator(req):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @renderer_classes([CreatorJSONRenderer])
-def getCreator(req, name):
+def getCreatorByName(req, name):
     try:
       creator = Creator.objects.get(name = name)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such creator')
+    serializer = CreatorModelSerializer(creator, context={'req': req})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@renderer_classes([CreatorJSONRenderer])
+def getCreatorById(req, id):
+    try:
+      creator = Creator.objects.get(id = id)
     except ObjectDoesNotExist as err:
         raise NotFound('No such creator')
     serializer = CreatorModelSerializer(creator, context={'req': req})
@@ -56,7 +67,7 @@ def getMe(req):
         raise NotFound('No such creator')
     serializer = CreatorModelSerializer(creator)
     res = serializer.data
-    res['views'] = getViewsNumber(creator.id)
+    res['views'] = getViewsNumber(creator.name)
     return Response(res, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
@@ -97,8 +108,8 @@ def manageSubscription(req, name, method):
     serializer = CreatorModelSerializer(creator, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-def getViewsNumber(creator_id):
+def getViewsNumber(creator_name):
     views = 0
-    for v in Video.objects.filter(creator_id = creator_id):
+    for v in Video.objects.filter(creator_name = creator_name):
         views += v.views
     return views
