@@ -1,12 +1,13 @@
 from django.urls import path
 
-from .views import registerCreator, modifyCreator, getCreatorById, getCreatorByName, subscribeToCreator, unsubscribeToCreator, getMe
+from .views import registerCreator, modifyCreator, removeCreator, getCreatorById, getCreatorByName, subscribeToCreator, unsubscribeToCreator, getMe
 
 app_name = 'creator'
 
 urlpatterns = [
     path('reg/', registerCreator, name='register'),
     path('modify/', modifyCreator, name='modify'),
+    path('del/', removeCreator, name='modify'),
     path('get/<str:name>', getCreatorByName, name='get'),
     path('get/id/<str:id>', getCreatorById, name='get'),
     path('getMe/', getMe, name='getMe'),

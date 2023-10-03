@@ -5,8 +5,8 @@ from authC.models import User
 class Creator(models.Model):
     user_id = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, unique=True)
-    contacts = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    contacts = models.TextField(blank=True)
+    description = models.TextField(blank=True)
     subscribers = models.ManyToManyField(User, related_name='subscribers', blank=True)
 
     def __str__(self):

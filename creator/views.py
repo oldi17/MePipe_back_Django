@@ -79,13 +79,23 @@ def modifyCreator(req):
         creator = Creator.objects.get(user_id = req.user.id)
     except:
         raise NotFound('No such creator')
-    serializer_data = req.data
+    serializer_data = req.data.dict()
     serializer = CreatorModelSerializer(
         creator, data=serializer_data, partial=True
     )
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def removeCreator(req):
+    try:
+        creator = Creator.objects.get(user_id = req.user.id)
+    except:
+        raise NotFound('No such creator')
+    creator.delete()
+    return Response('removed', status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
