@@ -19,6 +19,7 @@ from creator.renderers import CreatorJSONRenderer
 from creator.serializers import CreatorModelSerializer
 import MePipe.settings as settings
 from video.models import Video
+from video.utils import removeVideoFiles
 
 
 @api_view(['POST'])
@@ -94,6 +95,8 @@ def removeCreator(req):
         creator = Creator.objects.get(user_id = req.user.id)
     except:
         raise NotFound('No such creator')
+    for v in Video.objects.filter(creator_name = creator.name):
+        removeVideoFiles(v.url)
     creator.delete()
     return Response('removed', status=status.HTTP_200_OK)
 
