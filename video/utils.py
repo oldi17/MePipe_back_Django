@@ -5,6 +5,7 @@ import subprocess
 from PIL import Image
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+import os
 
 import MePipe.settings as settings
 
@@ -47,3 +48,7 @@ def saveVideo16x9(file, inFormat, path):
 def generateURL():
     link = str(hash(str(datetime.now()) + settings.SECRET_KEY))
     return codecs.encode(link.encode(), 'base64')[:-1].decode("utf-8")
+
+def removeVideoFiles(url):
+    os.remove(os.path.join(settings.MEDIA_ROOT_THUMB, url + '.jpg'))
+    os.remove(os.path.join(settings.MEDIA_ROOT_VIDEO, url + '.mp4'))

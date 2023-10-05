@@ -4,7 +4,8 @@ from .views import (
     getVideo, addVideo, modifyVideo,
     dislikeVideo, likeVideo, unlikeVideo,
     getHistoryVideo, setHistoryVideoTime,
-    getCreatorVideo, getAllVideo, getAllHistoryVideo)
+    getCreatorVideo, getAllVideo, getAllHistoryVideo,
+    delVideo,)
 
 app_name = 'video'
 
@@ -15,6 +16,7 @@ urlpatterns = [
     path('like/<str:url>', likeVideo, name='like'),
     path('dislike/<str:url>', dislikeVideo, name='dislike'),
     path('unlike/<str:url>', unlikeVideo, name='unlike'),
+    path('del/<str:url>', delVideo, name='unlike'),
 
     path('creator/<str:name>', getCreatorVideo, name='get creator'),
     path('all/', getAllVideo, name='get all'),

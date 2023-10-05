@@ -12,7 +12,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from creator.models import Creator
-from video.utils import generateURL
+from video.utils import generateURL, removeVideoFiles
 from .models import Video, HistoryVideo
 from .renderers import HistoryVideoJSONRenderer, VideoJSONRenderer
 from .serializers import VideoModelSerializer, HistoryVideoModelSerializer
@@ -128,7 +128,7 @@ def modifyVideo(req, url):
     except:
         raise PermissionDenied('You are not a creator yet')
     
-    if video.creator_id != creator:
+    if video.creator_name != creator:
         raise PermissionDenied('It\'s not your video')
     
 
@@ -141,6 +141,28 @@ def modifyVideo(req, url):
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delVideo(req, url):
+    try:
+        video = Video.objects.get(url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video')
+    
+    try:
+        creator = Creator.objects.get(user_id = req.user.id)
+    except:
+        raise PermissionDenied('You are not a creator yet')
+    
+    if video.creator_name != creator:
+        raise PermissionDenied('It\'s not your video')
+    
+    try:
+        removeVideoFiles(video.url)
+        video.delete()
+    except:
+        return Response('Something went wrong', status=status.HTTP_409_CONFLICT)
+    return Response('removed', status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
