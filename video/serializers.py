@@ -4,6 +4,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import UnsupportedMediaType
 from django.core.exceptions import SuspiciousFileOperation
 from authC.models import User
+from django.core.files.base import ContentFile
+
 
 from video.utils import getMediaInfo, saveImage16x9, saveVideo16x9
 
@@ -32,7 +34,6 @@ class VideoModelSerializer(serializers.ModelSerializer):
         try:
             saveImage16x9(validated_data['thumbnail'].file, 
                           os.path.join(settings.MEDIA_ROOT_THUMB, validated_data['url'] + '.jpg'))
-            
             saveVideo16x9(validated_data['file'].file, 
                           videoData.get('format_name'),
                           os.path.join(settings.MEDIA_ROOT_VIDEO, validated_data['url'] + '.mp4'))

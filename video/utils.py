@@ -40,6 +40,7 @@ def saveImage16x9(file, path, fill_color=(0, 0, 0, 0)):
     return new_im
 
 def saveVideo16x9(file, inFormat, path):
+    file.seek(0)
     if 'mp4' in inFormat:
         default_storage.save(path, ContentFile(file.read()))
     else:
@@ -50,5 +51,11 @@ def generateURL():
     return codecs.encode(link.encode(), 'base64')[:-1].decode("utf-8")
 
 def removeVideoFiles(url):
-    os.remove(os.path.join(settings.MEDIA_ROOT_THUMB, url + '.jpg'))
-    os.remove(os.path.join(settings.MEDIA_ROOT_VIDEO, url + '.mp4'))
+    try:
+        os.remove(os.path.join(settings.MEDIA_ROOT_THUMB, url + '.jpg'))
+    except:
+        pass
+    try:
+        os.remove(os.path.join(settings.MEDIA_ROOT_VIDEO, url + '.mp4'))
+    except:
+        pass

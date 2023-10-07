@@ -43,5 +43,8 @@ def paginate(
         modelName: serializer.data , 
         'count': paginator.count, 
         'numpages' : paginator.num_pages, 
+        'firstlink': req.path + '?page=' + str(1), 
         'nextlink': req.path + '?page=' + str(nextPage), 
-        'prevlink': req.path + '?page=' + str(previousPage)})
+        'prevlink': req.path + '?page=' + str(previousPage),
+        'nextlink': req.path + '?page=' + str(nextPage), 
+        })

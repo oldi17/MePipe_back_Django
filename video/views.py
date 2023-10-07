@@ -158,9 +158,10 @@ def delVideo(req, url):
         raise PermissionDenied('It\'s not your video')
     
     try:
-        removeVideoFiles(video.url)
+        url = video.url
         video.delete()
-    except:
+        removeVideoFiles(url)
+    except Exception as ex:
         return Response('Something went wrong', status=status.HTTP_409_CONFLICT)
     return Response('removed', status=status.HTTP_200_OK)
 
