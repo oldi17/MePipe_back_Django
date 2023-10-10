@@ -74,10 +74,10 @@ class VideoModelSerializer(serializers.ModelSerializer):
         ret['likes'] = instance.getLikesNumber()
         ret['dislikes'] = instance.getDislikesNumber()
         req = self.context.get("req")
+        url = self.context.get("url")
         if req and isinstance(req.user, User):
             user = req.user
             ret['isliked'] = instance.isLikedByUser(user)
-        
         return ret
 
 class HistoryVideoModelSerializer(serializers.ModelSerializer):
@@ -86,9 +86,7 @@ class HistoryVideoModelSerializer(serializers.ModelSerializer):
         exclude = ()
     
     def create(self, validated_data):
-        return HistoryVideo.objects.update_or_create(
-            user_id = validated_data['user_id'], 
-            video_url = validated_data['video_url'])[0]
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
         time = validated_data.pop('time', 0)

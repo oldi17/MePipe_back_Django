@@ -10,6 +10,7 @@ from rest_framework.decorators import (
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
+from authC.models import User
 
 from creator.models import Creator
 from video.utils import generateURL, removeVideoFiles
@@ -48,11 +49,26 @@ def getVideo(req, url):
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
-    serializer = VideoModelSerializer(video, context={'req': req})
 
+    serializer = VideoModelSerializer(video, context={'req': req, 'url': url})
+    res = serializer.data
+
+    if isinstance(req.user, User):
+        historyVideo = HistoryVideo.objects.filter(video_url=video.url).first()
+        if historyVideo:
+            res['timestamp'] = historyVideo.time
+        else:
+            hisSerializer = HistoryVideoModelSerializer(data={
+                'user_id': req.user.id, 
+                'video_url': video.url
+            })
+            hisSerializer.is_valid(raise_exception=True)
+            hisSerializer.save()
+            res['timestamp'] = 0
+            
     video.addView()
     
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(res, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -62,13 +78,11 @@ def getHistoryVideo(req, url):
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
-    historyVideo = {
-        'user_id': req.user.id, 
-        'video_url': video.url
-    }
-    serializer = HistoryVideoModelSerializer(data=historyVideo)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
+    try:
+        historyVideo = HistoryVideo.objects.get(video_url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video in history')
+    serializer = HistoryVideoModelSerializer(historyVideo)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -79,16 +93,11 @@ def setHistoryVideoTime(req, url):
         video = Video.objects.get(url = url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
-    serializer_data = {
-        'user_id': req.user.id, 
-        'video_url': video.url,
-    }
     try:
-        historyVideo = HistoryVideo.objects.get(**serializer_data)
+        historyVideo = HistoryVideo.objects.get(video_url = video.url)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video in history')
-    serializer_data['time'] = req.data.get('historyVideo', {}).get('time', 0)
-    serializer = HistoryVideoModelSerializer(historyVideo, data=serializer_data, partial=True)
+    serializer = HistoryVideoModelSerializer(historyVideo, data=req.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)

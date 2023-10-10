@@ -112,6 +112,21 @@ def subscribeToCreator(req, name):
 def unsubscribeToCreator(req, name):
     return manageSubscription(req, name, 'unsubscribe')
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@renderer_classes([CreatorJSONRenderer])
+def getCreatorWithUsername(req, name):
+    try:
+        creator = Creator.objects.get(name = name)
+        username = creator.user_id.username
+    except:
+        raise NotFound('No such creator')
+    
+    serializer = CreatorModelSerializer(creator, context={'req': req})
+    res = serializer.data
+    res['username'] = username
+    return Response(res, status=status.HTTP_200_OK)
+
 def manageSubscription(req, name, method):
     try:
       creator = Creator.objects.get(name = name)

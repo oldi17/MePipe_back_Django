@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import registerCreator, modifyCreator, removeCreator, getCreatorById, getCreatorByName, subscribeToCreator, unsubscribeToCreator, getMe
+from .views import getCreatorWithUsername, registerCreator, modifyCreator, removeCreator, getCreatorById, getCreatorByName, subscribeToCreator, unsubscribeToCreator, getMe
 
 app_name = 'creator'
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path('getMe/', getMe, name='getMe'),
     path('sub/<str:name>', subscribeToCreator, name='sub'),
     path('unsub/<str:name>', unsubscribeToCreator, name='unsub'),
+    path('username/<str:name>', getCreatorWithUsername, name='get username')
 ]
