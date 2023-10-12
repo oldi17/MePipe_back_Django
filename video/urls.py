@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    getVideo, addVideo, modifyVideo,
+    delHistoryVideo, getRecVideo, getVideo, addVideo, modifyVideo,
     dislikeVideo, likeVideo, unlikeVideo,
     getHistoryVideo, setHistoryVideoTime,
     getCreatorVideo, getAllVideo, getAllHistoryVideo,
@@ -20,9 +20,12 @@ urlpatterns = [
 
     path('creator/<str:name>', getCreatorVideo, name='get creator'),
     path('all/', getAllVideo, name='get all'),
+    path('rec/all/<str:name>', getRecVideo, name='get all recomended'),
     
     
     path('history/all/', getAllHistoryVideo, name='get all history'),
     path('history/t/<str:url>', setHistoryVideoTime, name='set time of history video'),
     path('history/watch/<str:url>', getHistoryVideo, name='get history video'),
+    path('history/del/<str:url>', delHistoryVideo, name='get history video'),
+
 ]

@@ -11,6 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 from authC.models import User
+from django.db.models.expressions import Case, When
 
 from creator.models import Creator
 from video.utils import generateURL, removeVideoFiles
@@ -40,6 +41,14 @@ def getCreatorVideo(req, name):
 def getAllVideo(req):
     video = Video.objects.all().order_by('-id')
     return paginate(video, req, VideoModelSerializer, 'videos')
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getRecVideo(req, name):
+    videos = Video.objects.all() \
+        .annotate(is_creator_video = Case(When(creator_name = name, then=1), default=0)) \
+        .order_by('-is_creator_video', '-id')
+    return paginate(videos, req, VideoModelSerializer, 'videos', 3)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -79,11 +88,21 @@ def getHistoryVideo(req, url):
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
     try:
-        historyVideo = HistoryVideo.objects.get(video_url = url)
+        historyVideo = HistoryVideo.objects.get(video_url = url, user_id = req.user)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video in history')
     serializer = HistoryVideoModelSerializer(historyVideo)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delHistoryVideo(req, url):
+    try:
+        historyVideo = HistoryVideo.objects.get(video_url = url)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such video in history')
+    historyVideo.delete()
+    return Response('removed', status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -94,7 +113,7 @@ def setHistoryVideoTime(req, url):
     except ObjectDoesNotExist as err:
         raise NotFound('No such video')
     try:
-        historyVideo = HistoryVideo.objects.get(video_url = video.url)
+        historyVideo = HistoryVideo.objects.get(video_url = video.url, user_id = req.user)
     except ObjectDoesNotExist as err:
         raise NotFound('No such video in history')
     serializer = HistoryVideoModelSerializer(historyVideo, data=req.data, partial=True)
