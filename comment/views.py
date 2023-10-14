@@ -58,14 +58,14 @@ def addComment(req, url):
 @renderer_classes([CommentJSONRenderer])
 def modifyComment(req, id):
     serializer_data = req.data.get('comment', None)
-    comment = checkComment(req, id)
+    comment = getCommentById(id)
     
-    if comment.user_id != req.user:
+    if comment.user_username != req.user:
         raise PermissionDenied('It\'s not your comment')
 
     serializer = CommentModelSerializer(
-        comment, data=serializer_data, partial=True
-        , context={'req': req})
+        comment, data=serializer_data, partial=True, 
+        context={'req': req})
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -90,11 +90,14 @@ def unlikeComment(req, id):
     return checkComment(req, id, 'unlike')
 
 def checkComment(req, id, method):
+    comment = getCommentById(id)
+    getattr(comment, method)(req.user)
+    serializer = CommentModelSerializer(comment, context={'req': req})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+def getCommentById(id):
     try:
         comment = Comment.objects.get(id = id)
     except ObjectDoesNotExist as err:
         raise NotFound('No such comment')
-    
-    getattr(comment, method)(req.user)
-    serializer = CommentModelSerializer(comment, context={'req': req})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return comment

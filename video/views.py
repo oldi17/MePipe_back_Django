@@ -40,7 +40,7 @@ def getCreatorVideo(req, name):
 @permission_classes([AllowAny])
 def getAllVideo(req):
     video = Video.objects.all().order_by('-id')
-    return paginate(video, req, VideoModelSerializer, 'videos')
+    return paginate(video, req, VideoModelSerializer, 'videos', 3)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
