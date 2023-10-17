@@ -30,6 +30,7 @@ class CommentModelSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['likes'] = instance.getLikesNumber()
         ret['dislikes'] = instance.getDislikesNumber()
+        ret['user_username'] = User.objects.get(id = instance.user_id.id).username
 
         req = self.context.get("req")
         if req and isinstance(req.user, User):

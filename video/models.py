@@ -4,7 +4,7 @@ from creator.models import Creator
 from authC.models import User
 
 class Video(models.Model):
-    creator_name = models.ForeignKey(Creator, to_field='name', on_delete=models.CASCADE)
+    creator_id = models.ForeignKey(Creator, on_delete=models.CASCADE)
     title = models.CharField("title", max_length=255)
     description = models.TextField("description", blank=True, null=True)
     url = models.CharField("url", max_length=255, unique=True)
@@ -51,3 +51,6 @@ class HistoryVideo(models.Model):
     video_url = models.ForeignKey(Video, on_delete=models.CASCADE, to_field='url')
     watchedAt = models.DateTimeField(auto_now=True)
     time = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user_id', 'video_url',)

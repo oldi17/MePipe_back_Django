@@ -23,16 +23,18 @@ from MePipe.utils import paginate
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getAllHistoryVideo(req):
-    historyVideo = HistoryVideo.objects \
+    historyVideos = HistoryVideo.objects \
         .filter(user_id = req.user.id) \
         .order_by('-watchedAt')
-    return paginate(historyVideo, req, HistoryVideoModelSerializer, 'historyVideos')
+    urls = [hv.video_url.url for hv in historyVideos]
+    videos = Video.objects.filter(url__in = urls)
+    return paginate(videos, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def getCreatorVideo(req, name):
     video = Video.objects \
-        .filter(creator_name = name) \
+        .filter(creator_id = getCreatorIdByName(name)) \
         .order_by('-id')
     return paginate(video, req, VideoModelSerializer, 'videos')
 
@@ -40,15 +42,22 @@ def getCreatorVideo(req, name):
 @permission_classes([AllowAny])
 def getAllVideo(req):
     video = Video.objects.all().order_by('-id')
-    return paginate(video, req, VideoModelSerializer, 'videos', 3)
+    return paginate(video, req, VideoModelSerializer, 'videos')
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSubVideos(req):
+    creators = Creator.objects.filter(subscribers__in = [req.user])
+    video = Video.objects.filter(creator_id__in = creators).order_by('-id')
+    return paginate(video, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def getRecVideo(req, name):
     videos = Video.objects.all() \
-        .annotate(is_creator_video = Case(When(creator_name = name, then=1), default=0)) \
+        .annotate(is_creator_video = Case(When(creator_id = getCreatorIdByName(name), then=1), default=0)) \
         .order_by('-is_creator_video', '-id')
-    return paginate(videos, req, VideoModelSerializer, 'videos', 3)
+    return paginate(videos, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -63,7 +72,7 @@ def getVideo(req, url):
     res = serializer.data
 
     if isinstance(req.user, User):
-        historyVideo = HistoryVideo.objects.filter(video_url=video.url).first()
+        historyVideo = HistoryVideo.objects.filter(user_id = req.user.id, video_url=video.url).first()
         if historyVideo:
             res['timestamp'] = historyVideo.time
         else:
@@ -132,7 +141,7 @@ def addVideo(req):
         raise PermissionDenied('You are not a creator yet')
   
     video = req.data.dict()
-    video['creator_name'] = creator.name
+    video['creator_id'] = creator.id
     video['url'] = generateURL()
     
     serializer = VideoModelSerializer(data=video, context={'req': req})
@@ -156,7 +165,7 @@ def modifyVideo(req, url):
     except:
         raise PermissionDenied('You are not a creator yet')
     
-    if video.creator_name != creator:
+    if video.creator_id != creator:
         raise PermissionDenied('It\'s not your video')
     
 
@@ -182,7 +191,7 @@ def delVideo(req, url):
     except:
         raise PermissionDenied('You are not a creator yet')
     
-    if video.creator_name != creator:
+    if video.creator_id != creator:
         raise PermissionDenied('It\'s not your video')
     
     try:
@@ -219,3 +228,6 @@ def manageLikes(req, url, method):
     getattr(video, method)(req.user)
     serializer = VideoModelSerializer(video, context={'req': req})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+def getCreatorIdByName(name):
+    return Creator.objects.get(name = name).id

@@ -5,6 +5,7 @@ from rest_framework.exceptions import UnsupportedMediaType
 from django.core.exceptions import SuspiciousFileOperation
 from authC.models import User
 from django.core.files.base import ContentFile
+from creator.models import Creator
 
 
 from video.utils import getMediaInfo, saveImage16x9, saveVideo16x9
@@ -73,6 +74,7 @@ class VideoModelSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['likes'] = instance.getLikesNumber()
         ret['dislikes'] = instance.getDislikesNumber()
+        ret['creator_name'] = Creator.objects.get(id = instance.creator_id.id).name
         req = self.context.get("req")
         url = self.context.get("url")
         if req and isinstance(req.user, User):

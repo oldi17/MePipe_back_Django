@@ -4,7 +4,7 @@ from authC.models import User
 from video.models import Video
 
 class Comment(models.Model):
-    user_username = models.ForeignKey(User, to_field='username', on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     video_url = models.ForeignKey(Video, on_delete=models.CASCADE, to_field='url')
     content = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)

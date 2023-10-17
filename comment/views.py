@@ -44,7 +44,7 @@ def addComment(req, url):
         raise NotFound('No such video')
     
     comment = req.data.get('comment', None)
-    comment['user_username'] = req.user.username
+    comment['user_id'] = req.user.id
     comment['video_url'] = video.url
     
     serializer = CommentModelSerializer(data=comment, context={'req': req})
@@ -60,7 +60,7 @@ def modifyComment(req, id):
     serializer_data = req.data.get('comment', None)
     comment = getCommentById(id)
     
-    if comment.user_username != req.user:
+    if comment.user_id != req.user:
         raise PermissionDenied('It\'s not your comment')
 
     serializer = CommentModelSerializer(

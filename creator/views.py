@@ -20,6 +20,7 @@ from creator.serializers import CreatorModelSerializer
 import MePipe.settings as settings
 from video.models import Video
 from video.utils import removeVideoFiles
+from video.views import getCreatorIdByName
 
 
 @api_view(['POST'])
@@ -30,6 +31,8 @@ def registerCreator(req):
     creator = req.data.dict()
     if not creator.get('channel_background', None):
         creator['channel_background'] = File(open(os.path.join(settings.STATIC_ROOT, 'cbg.png'), 'rb'))
+    if not creator.get('channel_pfp', None):
+        creator['channel_pfp'] = File(open(os.path.join(settings.STATIC_ROOT, 'cpfp.png'), 'rb'))
     creator['user_id'] = req.user.id
     serializer = CreatorModelSerializer(data=creator)
     serializer.is_valid(raise_exception=True)
@@ -138,6 +141,6 @@ def manageSubscription(req, name, method):
 
 def getViewsNumber(creator_name):
     views = 0
-    for v in Video.objects.filter(creator_name = creator_name):
+    for v in Video.objects.filter(creator_id = getCreatorIdByName(creator_name)):
         views += v.views
     return views
