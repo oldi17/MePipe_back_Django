@@ -12,6 +12,9 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import MultiPartParser, FormParser
 from authC.models import User
 from django.db.models.expressions import Case, When
+from django.db.models import Q
+import operator
+from functools import reduce
 
 from creator.models import Creator
 from video.utils import generateURL, removeVideoFiles
@@ -42,6 +45,16 @@ def getCreatorVideo(req, name):
 @permission_classes([AllowAny])
 def getAllVideo(req):
     video = Video.objects.all().order_by('-id')
+    return paginate(video, req, VideoModelSerializer, 'videos', 15)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def getSearchVideo(req):
+    query = req.data.get('query', '')
+    reducedTitle = reduce(operator.and_, (Q(title__icontains=x) for x in query.split(' ')))
+    reducedDescription = reduce(operator.and_, (Q(description__icontains=x) for x in query.split(' ')))
+    video = Video.objects \
+        .filter(reducedTitle | reducedDescription).order_by('-id')
     return paginate(video, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
