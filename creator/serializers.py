@@ -22,7 +22,7 @@ class CreatorModelSerializer(serializers.ModelSerializer):
         pfp = validated_data.pop('channel_pfp')
         try:
             cropAndSaveImage6x1(image.file, 
-                          os.path.join(settings.MEDIA_ROOT_CBG, validated_data['name'] + '.jpg'))
+                          os.path.join(settings.MEDIA_ROOT_CBG, validated_data['name'] + '.png'))
             saveImage1x1(pfp.file,
                           os.path.join(settings.MEDIA_ROOT_CPFP, validated_data['name'] + '.png'))
         except:
@@ -36,7 +36,7 @@ class CreatorModelSerializer(serializers.ModelSerializer):
         if image:
             try:
                 cropAndSaveImage6x1(image.file, 
-                            os.path.join(settings.MEDIA_ROOT_CBG, instance.name + '.jpg'))
+                            os.path.join(settings.MEDIA_ROOT_CBG, instance.name + '.png'))
             except:
                 raise UnsupportedMediaType('', detail='Loaded thumbnail is not valid (supported formats: png, jpeg, webp)')
         if pfp:
