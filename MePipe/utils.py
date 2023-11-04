@@ -18,7 +18,7 @@ def paginate(
         req,
         Serializer,
         modelName='data',
-        itemsPerPage=7,
+        itemsPerPage=15,
 ):
     data = []
     nextPage = 1

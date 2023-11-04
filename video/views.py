@@ -28,9 +28,9 @@ from MePipe.utils import paginate
 def getAllHistoryVideo(req):
     historyVideos = HistoryVideo.objects \
         .filter(user_id = req.user.id) \
+        .select_related('video_url') \
         .order_by('-watchedAt')
-    urls = [hv.video_url.url for hv in historyVideos]
-    videos = Video.objects.filter(url__in = urls)
+    videos = [hv.video_url for hv in historyVideos]
     return paginate(videos, req, VideoModelSerializer, 'videos')
 
 @api_view(['GET'])
