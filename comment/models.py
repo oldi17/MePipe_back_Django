@@ -6,7 +6,7 @@ from video.models import Video
 class Comment(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     video_url = models.ForeignKey(Video, on_delete=models.CASCADE, to_field='url')
-    content = models.TextField()
+    content = models.TextField(max_length=255)
     createdAt = models.DateTimeField(auto_now_add=True)
     modified = models.BooleanField(default=False)
     likes = models.ManyToManyField(User, related_name='clikes', blank=True)
