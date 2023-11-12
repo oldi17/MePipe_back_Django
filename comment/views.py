@@ -89,6 +89,21 @@ def dislikeComment(req, id):
 def unlikeComment(req, id):
     return checkComment(req, id, 'unlike')
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def removeComment(req, id):
+    try:
+        comment = Comment.objects.get(id = id)
+    except ObjectDoesNotExist as err:
+        raise NotFound('No such comment')
+    
+    if comment.user_id != req.user:
+        raise PermissionDenied('It\'s not your comment')
+    
+    comment.delete()
+
+    return Response('removed', status=status.HTTP_200_OK)
+
 def checkComment(req, id, method):
     comment = getCommentById(id)
     getattr(comment, method)(req.user)
