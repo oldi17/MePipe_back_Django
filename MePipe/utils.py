@@ -41,8 +41,8 @@ def paginate(
 
     return Response({
         modelName: serializer.data , 
-        'count': page, 
-        'numpages' : paginator.num_pages, 
+        'curr_page': page, 
+        'max_page' : paginator.num_pages, 
         'firstlink': req.path + '?page=' + str(1), 
         'nextlink': req.path + '?page=' + str(nextPage), 
         'prevlink': req.path + '?page=' + str(previousPage),
