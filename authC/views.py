@@ -46,16 +46,19 @@ def loginUser(req):
     data.update(tokens)
     return Response(data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 @renderer_classes([UserJSONRenderer])
+def reqUser(req):
+    if req.method == 'GET':
+        return getUser(req)
+    if req.method == 'PATCH':
+        return modifyUser(req)
+
 def getUser(req):
     serializer = UserModelSerializer(req.user)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-@renderer_classes([UserJSONRenderer])
 @parser_classes([MultiPartParser, FormParser])
 def modifyUser(req):
     serializer_data = req.data
