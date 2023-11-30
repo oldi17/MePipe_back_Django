@@ -1,0 +1,1177 @@
+openapi: 3.0.0
+info:
+  title: MePipe
+  description: Simple YouTube clone
+  contact:
+    name: oldi17
+    url: https://github.com/oldi17
+  version: 1.0.0
+servers:
+  - url: MePipeAPI
+tags:
+  - name: user
+    description: User /auth/
+  - name: creator
+    description: Creator /api/creator/
+  - name: video
+    description: Video /api/v/
+  - name: comment
+    description: Comment /api/c/
+paths:
+  /static/{filename}:
+    servers:
+      - url: MePipeCDN
+    get:
+      description: get static file
+      parameters:
+        - in: path
+          name: filename
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: static file
+          content:
+            application/file:
+              schema:
+                title: file
+                type: string
+                format: binary
+  /auth/reg/:
+    description: Sign up user
+    post:
+      tags:
+        - user
+      description: Sign up user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/regUser'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error (exists, required, valid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotValid'
+  /auth/login/:
+    description: Sign in user
+    post:
+      tags:
+        - user
+      description: Sign in user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/loginUser'
+      responses:
+        '200':
+          description: User created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Tokens'
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error (exists, required, valid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotValid'
+  /auth/user/:
+    description: User manipulations
+    get:
+      tags:
+        - user
+      description: Get user
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: User is shown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenError'
+    patch:
+      tags:
+        - user
+      description: Modify user
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/modUser'
+      responses:
+        '200':
+          description: User is modified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error (exists, required, valid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotValid'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenError'
+  /auth/token/refresh/:
+    description: Token refresh
+    post:
+      tags:
+        - user
+      description: Token refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenError'
+  /api/c/add/{url}:
+    post:
+      operationId: api_c_add_create
+      parameters:
+        - in: path
+          description: video url
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentModel'
+      responses:
+        '200':
+          description: Comment params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentModelAuthed'
+                
+  /api/c/all/{url}:
+    get:
+      operationId: api_c_all_retrieve
+      parameters:
+        - in: path
+          description: video url
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Comments params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsModel'
+  /api/c/count/{url}:
+    get:
+      operationId: api_c_count_retrieve
+      parameters:
+        - in: path
+          description: video url
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Integer count
+  /api/c/del/{id}:
+    delete:
+      operationId: api_c_del_destroy
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: removed
+  /api/c/dislike/{id}:
+    post:
+      operationId: api_c_dislike_create
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Comment params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentModelAuthed'
+  /api/c/like/{id}:
+    post:
+      operationId: api_c_like_create
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Comment params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentModelAuthed'
+  /api/c/modify/{id}:
+    patch:
+      operationId: api_c_modify_partial_update
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentModelMod'
+      responses:
+        '200':
+          description: Comment params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentModelAuthed'
+  /api/c/unlike/{id}:
+    post:
+      operationId: api_c_unlike_create
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - comment
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Comment params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentModelAuthed'
+  /api/creator/del/:
+    delete:
+      operationId: api_creator_del_destroy
+      description: Remove creator
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: removed
+                
+            
+  /api/creator/get/{name}:
+    get:
+      operationId: api_creator_get_retrieve
+      description: Get creator by name
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CreatorModel'
+                  - $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/get/id/{id}:
+    get:
+      operationId: api_creator_get_id_retrieve
+      description: Get creator by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CreatorModel'
+                  - $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/getMe/:
+    get:
+      operationId: api_creator_getMe_retrieve
+      description: Get my creator
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelMe'
+  /api/creator/modify/:
+    patch:
+      operationId: api_creator_modify_partial_update
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatorModelBase'
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/reg/:
+    post:
+      operationId: api_creator_reg_create
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatorModel'
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/sub/{name}:
+    post:
+      operationId: api_creator_sub_create
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/unsub/{name}:
+    post:
+      operationId: api_creator_unsub_create
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/creator/username/{name}:
+    get:
+      operationId: api_creator_username_retrieve
+      description: Get creator by username
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - creator
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Creator params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorModelAuthed'
+  /api/v/add/:
+    post:
+      operationId: api_v_add_create
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/VideoModel'
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthed'
+  /api/v/all/:
+    get:
+      operationId: api_v_all_retrieve
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Videos params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosModel'
+  /api/v/creator/{name}:
+    get:
+      operationId: api_v_creator_retrieve
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v/del/{url}:
+    delete:
+      operationId: api_v_del_destroy
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: removed
+  /api/v/dislike/{url}:
+    post:
+      operationId: api_v_dislike_create
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthed'
+  /api/v/history/all/:
+    get:
+      operationId: api_v_history_all_retrieve
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Videos params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosModel'
+  /api/v/history/del/{url}:
+    delete:
+      operationId: api_v_history_del_destroy
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: removed
+  /api/v/history/t/{url}:
+    post:
+      operationId: api_v_history_t_create
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                time:
+                  type: integer
+      responses:
+        '200':
+          description: HistoryVideo params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryVideoModel'
+  /api/v/history/watch/{url}:
+    get:
+      operationId: api_v_history_watch_retrieve
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: HistoryVideo params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryVideoModel'
+  /api/v/like/{url}:
+    post:
+      operationId: api_v_like_create
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthed'
+  /api/v/modify/{url}:
+    patch:
+      operationId: api_v_modify_partial_update
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VideoModelMod'
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthed'
+  /api/v/rec/all/{name}:
+    get:
+      operationId: api_v_rec_all_retrieve
+      parameters:
+        - in: path
+          description: name of creator
+          name: name
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Videos params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosModel'
+  /api/v/search/:
+    post:
+      operationId: api_v_search_create
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+        - {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+      responses:
+        '200':
+          description: Videos params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosModel'
+  /api/v/sub/all/:
+    get:
+      operationId: api_v_sub_all_retrieve
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Videos params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideosModel'
+  /api/v/unlike/{url}:
+    post:
+      operationId: api_v_unlike_create
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthed'
+  /api/v/watch/{url}:
+    get:
+      operationId: api_v_watch_retrieve
+      parameters:
+        - in: path
+          name: url
+          schema:
+            type: string
+          required: true
+      tags:
+        - video
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        '200':
+          description: Video params
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoModelAuthedGet'
+components:
+  schemas:
+    regUser:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: Danny
+        email:
+          type: string
+          format: email
+          pattern: \w+@[a-zA-Z]\w+\.[a-zA-Z]+
+          example: qwe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: 12345678
+        logo:
+          description: png or jpg file (server should implement defalt pfp)
+          type: string
+          format: binary
+    modUser:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: Danny
+        email:
+          type: string
+          format: email
+          pattern: \w+@[a-zA-Z]\w+\.[a-zA-Z]+
+          example: qwe@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: 12345678
+        logo:
+          description: png or jpg file (server should implement defalt pfp)
+          type: string
+          format: binary
+    UserNotValid:
+      type: object
+      properties:
+        username:
+          type: array
+          items:
+            description: errors
+            type: string
+          minItems: 1
+        email:
+          type: array
+          items:
+            description: errors
+            type: string
+          minItems: 1
+        password:
+          type: array
+          items:
+            description: errors
+            type: string
+          minItems: 1
+        logo:
+          type: array
+          items:
+            description: errors
+            type: string
+          minItems: 1
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+    Tokens:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+    loginUser:
+      type: object
+      properties:
+        user:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+              pattern: \w+@[a-zA-Z]\w+\.[a-zA-Z]+
+              example: qwe@example.com
+            password:
+              type: string
+              format: password
+              minLength: 8
+              maxLength: 128
+              example: 12345678
+    TokenError:
+      type: object
+      properties:
+        detail:
+          type: string
+    Paginator:
+      type: object
+      properties:
+        curr_page:
+          type: integer
+        max_page:
+          type: integer
+        firstlink:
+          type: string
+        nextlink:
+          type: string
+        prevlink:
+          type: string
+        lastlink:
+          type: string
+    CommentModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        content:
+          type: string
+          maxLength: 255
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: boolean
+          readOnly: true
+        user_username:
+          type: string
+          readOnly: true
+        video_url:
+          type: string
+        likes:
+          type: integer
+          readOnly: true
+        dislikes:
+          type: integer
+          readOnly: true
+      required:
+      - content
+      - video_url
+    CommentModelMod:
+      allOf:
+        - $ref: '#/components/schemas/CommentModel'
+      properties:
+        video_url:
+          readOnly: true
+    CommentModelAuthed:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CommentModel'
+      properties:
+        isliked:
+          type: integer
+          readOnly: true
+    CommentsModel:
+      allOf:
+        - $ref: '#/components/schemas/Paginator'
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentModel'
+    CreatorModelBase:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        channel_pfp:
+          type: string
+          format: binary
+          writeOnly: true
+        channel_background:
+          type: string
+          format: binary
+          writeOnly: true
+        name:
+          type: string
+          maxLength: 255
+        contacts:
+          type: string
+        description:
+          type: string
+        user_id:
+          type: integer
+          readOnly: true
+        subscribers:
+          type: integer
+    CreatorModel:
+      allOf:
+        - $ref: '#/components/schemas/CreatorModelBase'
+        - required: [name]
+      
+    CreatorModelAuthed:
+      allOf:
+        - $ref: '#/components/schemas/CreatorModel'
+      type: object
+      properties:
+        issubscribed:
+          type: integer
+    CreatorModelMe:
+      allOf:
+        - $ref: '#/components/schemas/CreatorModelAuthed'
+      type: object
+      properties:
+        views:
+          type: integer
+      
+    HistoryVideoModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        watchedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        time:
+          type: integer
+        user_id:
+          type: integer
+        video_url:
+          type: string
+      required:
+      - video_url
+      - time
+    VideoModelBase:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+        thumbnail:
+          type: string
+          format: binary
+          writeOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        url:
+          type: string
+          readOnly: true
+        duration:
+          type: integer
+          readOnly: true
+        views:
+          type: integer
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        likes:
+          type: integer
+          readOnly: true
+        dislikes:
+          type: integer
+          readOnly: true
+    VideoModel:
+      allOf:
+        - $ref: '#/components/schemas/VideoModelBase'
+      required:
+      - file
+      - thumbnail
+      - title
+      - url
+    VideoModelMod:
+      allOf:
+        - $ref: '#/components/schemas/VideoModelBase'
+      properties:
+        file:
+          readOnly: true
+    VideoModelAuthed:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/VideoModel'
+      properties:
+        isliked:
+          type: integer
+          readOnly: true
+    VideoModelAuthedGet:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/VideoModelAuthed'
+      properties:
+        timestamp:
+          type: integer
+          readOnly: true
+    VideosModel:
+      allOf:
+        - $ref: '#/components/schemas/Paginator'
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoModel'
+    
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
