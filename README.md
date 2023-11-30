@@ -2,6 +2,9 @@
 [Русский](#ru)
 [English](#en)
 
+
+[Swagger](swagger_openapi.yaml)
+
 # ru
 Это бэкенд приложение для проекта MePipe <br />
 Фронтенд приложение доступно по ссылке: https://github.com/oldi17/MePipe
